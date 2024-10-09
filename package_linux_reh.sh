@@ -7,6 +7,10 @@ if [[ "${CI_BUILD}" == "no" ]]; then
   exit 1
 fi
 
+APP_NAME_LC="$( echo "${APP_NAME}" | awk '{print tolower($0)}' )"
+
+mkdir -p assets
+
 tar -xzf ./vscode.tar.gz
 
 cd vscode || { echo "'vscode' dir not found"; exit 1; }
@@ -48,7 +52,7 @@ fi
 
 export VSCODE_REMOTE_DEPENDENCIES_CONTAINER_NAME
 
-sed -i "/target/s/\"20.*\"/\"${NODE_VERSION}\"/" remote/.yarnrc
+sed -i "/target/s/\"20.*\"/\"${NODE_VERSION}\"/" remote/.npmrc
 
 if [[ "${NODE_VERSION}" != 16* ]]; then
   if [[ -f "../patches/linux/reh/node16.patch" ]]; then
@@ -69,12 +73,12 @@ if [[ -d "../patches/linux/reh/" ]]; then
 fi
 
 for i in {1..5}; do # try 5 times
-  yarn --cwd build --frozen-lockfile --check-files && break
+  npm ci --prefix build && break
   if [[ $i == 3 ]]; then
-    echo "Yarn failed too many times" >&2
+    echo "Npm install failed too many times" >&2
     exit 1
   fi
-  echo "Yarn failed $i, trying again..."
+  echo "Npm install failed $i, trying again..."
 done
 
 if [[ "${VSCODE_ARCH}" == "ppc64le" ]]; then
@@ -84,32 +88,44 @@ else
 fi
 
 for i in {1..5}; do # try 5 times
-  yarn --frozen-lockfile --check-files && break
-  if [ $i -eq 3 ]; then
-    echo "Yarn failed too many times" >&2
+  npm ci && break
+  if [[ $i == 3 ]]; then
+    echo "Npm install failed too many times" >&2
     exit 1
   fi
-  echo "Yarn failed $i, trying again..."
+  echo "Npm install failed $i, trying again..."
 done
 
 node build/azure-pipelines/distro/mixin-npm
 
 export VSCODE_NODE_GLIBC="-glibc-${GLIBC_VERSION}"
 
-yarn gulp minify-vscode-reh
-yarn gulp "vscode-reh-${VSCODE_PLATFORM}-${VSCODE_ARCH}-min-ci"
+if [[ "${SHOULD_BUILD_REH}" != "no" ]]; then
+  echo "Building REH"
+  yarn gulp minify-vscode-reh
+  yarn gulp "vscode-reh-${VSCODE_PLATFORM}-${VSCODE_ARCH}-min-ci"
 
-EXPECTED_GLIBC_VERSION="${GLIBC_VERSION}" EXPECTED_GLIBCXX_VERSION="${GLIBCXX_VERSION}" SEARCH_PATH="../vscode-reh-${VSCODE_PLATFORM}-${VSCODE_ARCH}" ./build/azure-pipelines/linux/verify-glibc-requirements.sh
+  EXPECTED_GLIBC_VERSION="${GLIBC_VERSION}" EXPECTED_GLIBCXX_VERSION="${GLIBCXX_VERSION}" SEARCH_PATH="../vscode-reh-${VSCODE_PLATFORM}-${VSCODE_ARCH}" ./build/azure-pipelines/linux/verify-glibc-requirements.sh
 
-cd ..
+  echo "Archiving REH"
+  pushd "../vscode-reh-${VSCODE_PLATFORM}-${VSCODE_ARCH}"
+  tar czf "../assets/${APP_NAME_LC}-reh-${VSCODE_PLATFORM}-${VSCODE_ARCH}-${RELEASE_VERSION}.tar.gz" .
+  popd
+fi
 
-APP_NAME_LC="$( echo "${APP_NAME}" | awk '{print tolower($0)}' )"
+if [[ "${SHOULD_BUILD_REH_WEB}" != "no" ]]; then
+  echo "Building REH-web"
+  yarn gulp minify-vscode-reh-web
+  yarn gulp "vscode-reh-web-${VSCODE_PLATFORM}-${VSCODE_ARCH}-min-ci"
 
-mkdir -p assets
+  EXPECTED_GLIBC_VERSION="${GLIBC_VERSION}" EXPECTED_GLIBCXX_VERSION="${GLIBCXX_VERSION}" SEARCH_PATH="../vscode-reh-web-${VSCODE_PLATFORM}-${VSCODE_ARCH}" ./build/azure-pipelines/linux/verify-glibc-requirements.sh
 
-echo "Building and moving REH"
-cd "vscode-reh-${VSCODE_PLATFORM}-${VSCODE_ARCH}"
-tar czf "../assets/${APP_NAME_LC}-reh-${VSCODE_PLATFORM}-${VSCODE_ARCH}-${RELEASE_VERSION}.tar.gz" .
+  echo "Archiving REH-web"
+  pushd "../vscode-reh-web-${VSCODE_PLATFORM}-${VSCODE_ARCH}"
+  tar czf "../assets/${APP_NAME_LC}-reh-web-${VSCODE_PLATFORM}-${VSCODE_ARCH}-${RELEASE_VERSION}.tar.gz" .
+  popd
+fi
+
 cd ..
 
 npm install -g checksum

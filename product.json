@@ -79,6 +79,7 @@
       "resolvers"
     ],
     "ms-python.python": [
+      "codeActionAI",
       "contribEditorContentMenu",
       "quickPickSortByLabel",
       "portsAttributes",
@@ -87,7 +88,8 @@
       "terminalDataWriteEvent",
       "terminalExecuteCommandEvent",
       "contribIssueReporter",
-      "terminalShellIntegration"
+      "notebookReplDocument",
+      "notebookVariableProvider"
     ],
     "ms-dotnettools.dotnet-interactive-vscode": [
       "notebookMessaging"
@@ -200,7 +202,6 @@
       "treeViewMarkdownMessage"
     ],
     "GitHub.copilot": [
-      "authGetSessions",
       "inlineCompletionsAdditions"
     ],
     "GitHub.copilot-nightly": [
@@ -231,13 +232,14 @@
       "newSymbolNamesProvider",
       "findFiles2",
       "extensionsAny",
-      "authGetSessions",
       "authLearnMore",
       "testObserver",
       "aiTextSearchProvider",
       "documentFiltersExclusive",
       "chatParticipantPrivate",
-      "lmTools"
+      "lmTools",
+      "contribDebugCreateConfiguration",
+      "inlineEdit"
     ],
     "GitHub.remotehub": [
       "contribRemoteHelp",
@@ -283,7 +285,8 @@
       "quickPickItemTooltip",
       "notebookExecution",
       "notebookCellExecution",
-      "notebookVariableProvider"
+      "notebookVariableProvider",
+      "notebookReplDocument"
     ],
     "dbaeumer.vscode-eslint": [
       "notebookCellExecutionState"
@@ -294,23 +297,22 @@
     "ms-azuretools.vscode-azureappservice": [
       "terminalDataWriteEvent"
     ],
-    "ms-azuretools.vscode-azureresourcegroups": [
-      "authGetSessions"
-    ],
     "ms-azuretools.vscode-azure-github-copilot": [
-      "chatParticipantAdditions",
-      "embeddings",
-      "languageModelSystem",
+      "contribChatParticipantDetection",
       "lmTools"
     ],
     "ms-vscode.anycode": [
       "extensionsAny"
     ],
     "ms-vscode.cpptools": [
-      "terminalDataWriteEvent"
+      "terminalDataWriteEvent",
+      "lmTools"
     ],
     "redhat.java": [
       "documentPaste"
+    ],
+    "vscjava.vscode-java-pack": [
+      "lmTools"
     ],
     "ms-dotnettools.csdevkit": [
       "inlineCompletionsAdditions"
@@ -329,6 +331,9 @@
     "TeamsDevApp.ms-teams-vscode-extension": [
       "chatParticipantAdditions",
       "languageModelSystem"
+    ],
+    "ms-toolsai.datawrangler": [
+      "lmTools"
     ],
     "jeanp413.open-remote-ssh": [
       "resolvers",

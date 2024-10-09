@@ -26,7 +26,9 @@ if [[ "${VSCODE_ARCH}" == "riscv64" ]]; then
   export VSCODE_ELECTRON_REPO='riscv-forks/electron-riscv-releases'
   export ELECTRON_SKIP_BINARY_DOWNLOAD=1
   export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-  ELECTRON_VERSION="30.1.2"
+
+  source ../electron.riscv64.sh
+
   if [[ "${ELECTRON_VERSION}" != "$(yarn config get target)" ]]; then
     # Fail the pipeline if electron target doesn't match what is used.
     # Look for releases here if electron version used by vscode changed:
@@ -34,8 +36,6 @@ if [[ "${VSCODE_ARCH}" == "riscv64" ]]; then
     echo "Electron RISC-V binary version doesn't match target electron version!"
     exit 1
   fi
-  export VSCODE_ELECTRON_TAG="v${ELECTRON_VERSION}.riscv2"
-  echo "871a049ae913a37664532e93e6d1c8dc2da6260e9297c90d6d525f79581948b8 *electron-v30.1.2-linux-riscv64.zip" >> build/checksums/electron.txt
 fi
 
 if [[ -d "../patches/linux/client/" ]]; then
@@ -51,12 +51,12 @@ if [[ -d "../patches/linux/client/" ]]; then
 fi
 
 for i in {1..5}; do # try 5 times
-  yarn --cwd build --frozen-lockfile --check-files && break
+  npm ci --prefix build && break
   if [[ $i == 3 ]]; then
-    echo "Yarn failed too many times" >&2
+    echo "Npm install failed too many times" >&2
     exit 1
   fi
-  echo "Yarn failed $i, trying again..."
+  echo "Npm install failed $i, trying again..."
 done
 
 if [[ "${VSCODE_ARCH}" == "ppc64le" ]]; then
@@ -66,12 +66,12 @@ else
 fi
 
 for i in {1..5}; do # try 5 times
-  yarn --check-files && break
-  if [ $i -eq 3 ]; then
-    echo "Yarn failed too many times" >&2
+  npm ci && break
+  if [[ $i -eq 3 ]]; then
+    echo "Npm install failed too many times" >&2
     exit 1
   fi
-  echo "Yarn failed $i, trying again..."
+  echo "Npm install failed $i, trying again..."
 done
 
 node build/azure-pipelines/distro/mixin-npm
